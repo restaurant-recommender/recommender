@@ -1,0 +1,9 @@
+runtime: python38
+instance_class: F1
+service: proton
+
+env_variables:
+    APP_SERVER_URL: https://neutron-dot-restaurant-recommender-system.et.r.appspot.com
+
+automatic_scaling:
+    max_instances: 1
