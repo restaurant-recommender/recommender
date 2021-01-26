@@ -20,6 +20,10 @@ except ImportError:
 def helloWorld():
     return "Hello, cross-origin-world!"
 
+@app.route("/_hc")
+def health_check():
+    return "ok"
+
 @app.route("/recommend/nearby", methods=['POST'])
 def nearby_recommend():
     data = request.json
@@ -58,13 +62,20 @@ def simple_recommend():
 
 @app.route("/recommend/genetic", methods=['POST'])
 def genetic_recommend():
-    data = request.json
-    restaurants = genetic_algorithm_recommender(data['restaurants'], data['users'])
-    print(f"Generated {len(restaurants)}")
-    return jsonify({
-        'status': True,
-        'restaurants': restaurants
-    })
+    try:
+        data = request.json
+        print('Got new genetic request')
+        restaurants = genetic_algorithm_recommender(data['restaurants'], data['users'])
+        print(f"Generated {len(restaurants)}")
+        return jsonify({
+            'status': True,
+            'restaurants': restaurants,
+        })
+    except Exception as error:
+        return jsonify({
+            'status': False,
+            'message': str(error),
+        })
 
 if __name__ == '__main__':
     print(env.PORT)

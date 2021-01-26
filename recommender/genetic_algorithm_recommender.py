@@ -1,13 +1,13 @@
 from random import sample, random
 
 # CONSTANT
-POPULATION = 30
+POPULATION = 100
 GENES = 6
 PAIRS = int(POPULATION / 2)
-TOP_N = 10
+TOP_N = 30
 CROSSOVER_RATE = 0.7
 MUTATION_RATE = 0.5
-CONVERGED_NUMBER = 3
+CONVERGED_NUMBER = 15
 
 # Types
 # Chromosome: (number (fitness), ChromosomeValue)
@@ -72,8 +72,12 @@ def genetic_algorithm_recommender(restaurants, users):
         selected_chromosomes = get_top_n_chromosomes(chromosomes, TOP_N)
         for _ in range(PAIRS):
             new_pair = []
+            count = 0
             while True:
+                if count == 100:
+                    break
                 new_pair = sample(range(len(selected_chromosomes)), 2)
+                count += 1
                 if new_pair not in pairs:
                     pairs.append(new_pair)
                     break
@@ -106,11 +110,17 @@ def genetic_algorithm_recommender(restaurants, users):
             mutated_chromosome_value = []
             for each_chromosome_value in chromosome_value:
                 if random() < MUTATION_RATE:
+                    count = 0
                     while True:
-                        new_gene = sample(range(len(restaurants)), 1)[0]
-                        if new_gene not in chromosome_value and new_gene not in mutated_chromosome_value:
-                            mutated_chromosome_value.append(new_gene)
+                        if count == 100:
+                            mutated_chromosome_value.append(each_chromosome_value)
                             break
+                        else:
+                            count += 1
+                            new_gene = sample(range(len(restaurants)), 1)[0]
+                            if new_gene not in chromosome_value and new_gene not in mutated_chromosome_value:
+                                mutated_chromosome_value.append(new_gene)
+                                break
                 else:
                     mutated_chromosome_value.append(each_chromosome_value)
             return [chromosome_value, mutated_chromosome_value]
@@ -149,11 +159,14 @@ def genetic_algorithm_recommender(restaurants, users):
     population = initialize_population()
     generation_highest_fitnesses = []
 
+    number_of_generation = 0
     while True:
+        number_of_generation += 1
         chromosomes = add_fitness_for_population(population)
         highest_fitness_chromosome = max(chromosomes)
         generation_highest_fitnesses.append(highest_fitness_chromosome[0])
-        if is_converged(generation_highest_fitnesses):
+        # print(f"Gen#{number_of_generation}: {highest_fitness_chromosome}")
+        if number_of_generation == 100 or is_converged(generation_highest_fitnesses):
             print(highest_fitness_chromosome)
             print(generation_highest_fitnesses)
             return [restaurants[index] for index in highest_fitness_chromosome[1]]
