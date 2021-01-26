@@ -37,12 +37,16 @@ def genetic_algorithm_recommender(restaurants, users):
             user_categories = user['categories']
             user_categories_set = set(user_categories)
             user_price_range = user.get('price_range', -1) 
+            if not user_price_range:
+                user_price_range = -1
 
             for index in chromosome_value:
                 score = 0
                 restaurant = restaurants[index]
                 restaurant_categories = [category['name_en'] for category in restaurant['profile']['categories']]
-                restaurant_price_range = restaurant['profile']['price_range']
+                restaurant_price_range = restaurant['profile'].get('price_range', -1)
+                if not restaurant_price_range:
+                    restaurant_price_range = -1
                 
                 preference_score = 0
                 for index, user_category in enumerate(user_categories):
