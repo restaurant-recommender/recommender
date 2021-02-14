@@ -165,10 +165,10 @@ def genetic_algorithm_recommender(restaurants, users):
         chromosomes = add_fitness_for_population(population)
         highest_fitness_chromosome = max(chromosomes)
         generation_highest_fitnesses.append(highest_fitness_chromosome[0])
-        # print(f"Gen#{number_of_generation}: {highest_fitness_chromosome}")
+        print(f"Gen#{number_of_generation}: {highest_fitness_chromosome}")
         if number_of_generation == 100 or is_converged(generation_highest_fitnesses):
-            print(highest_fitness_chromosome)
-            print(generation_highest_fitnesses)
+            print(f"Result: {highest_fitness_chromosome}")
+            # print(generation_highest_fitnesses)
             return [restaurants[index] for index in highest_fitness_chromosome[1]]
         pairs = get_pairs(chromosomes)
         population = generate_new_generation(pairs)
@@ -177,8 +177,12 @@ def genetic_algorithm_recommender(restaurants, users):
 def test_genetic_algorithm_recommender():
     import requests
     from pprint import pprint
-    response = requests.get('https://neutron-dot-restaurant-recommender-system.et.r.appspot.com/api/restaurants/nearby?lat=13.64999266005064&lon=100.49433963566172&dist=10000&limit=100')
-    input_restaurants = response.json()[:50]
+    import json
+    # response = requests.get('https://neutron-dot-restaurant-recommender-system.et.r.appspot.com/api/restaurants/nearby?lat=13.64999266005064&lon=100.49433963566172&dist=10000&limit=100')
+    with open('recommender/test_data/nearby_restaurants.json') as f:
+        response = json.load(f)
+    input_restaurants = response
+    input_restaurants = [restaurant for restaurant in input_restaurants if restaurant['type'] == 'restaurant']
     user_irin = {
         "name": "irin",
         "categories": ['Korean Restaurant', 'Japanese Restaurant', 'Italian Restaurant', 'Thai Restaurant', 'Shabu Shabu Restaurant'],
@@ -191,7 +195,8 @@ def test_genetic_algorithm_recommender():
     }
     users = [user_irin, user_north]
     recommended_retaurants = genetic_algorithm_recommender(input_restaurants, users)
-    pprint([restaurant['name'] for restaurant in recommended_retaurants])
+    # print(f"Result: {recommended_retaurants}")
+    pprint([(restaurant['name'], [cat['name_en'] for cat in restaurant['profile']['categories']]) for restaurant in recommended_retaurants])
 
 
 if __name__ == '__main__':
