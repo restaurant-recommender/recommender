@@ -2,7 +2,6 @@ from random import sample, random
 
 # CONSTANT
 POPULATION = 100
-GENES = 6
 PAIRS = int(POPULATION / 2)
 TOP_N = 30
 CROSSOVER_RATE = 0.7
@@ -26,7 +25,7 @@ CONVERGED_NUMBER = 15
 #     price_range: number
 # }
 
-def genetic_algorithm_recommender(restaurants, users):
+def genetic_algorithm_recommender(restaurants, users, genes=6, get_matrix=False, varbose=False):
     
     # return: number
     def compute_fitness(chromosome_value):
@@ -38,23 +37,40 @@ def genetic_algorithm_recommender(restaurants, users):
             user_categories_set = set(user_categories)
             user_price_range = user.get('price_range', -1) 
             if not user_price_range:
-                user_price_range = -1
+                user_price_range = None
 
             for index in chromosome_value:
                 score = 0
                 restaurant = restaurants[index]
                 restaurant_categories = [category['name_en'] for category in restaurant['profile']['categories']]
-                restaurant_price_range = restaurant['profile'].get('price_range', -1)
-                if not restaurant_price_range:
-                    restaurant_price_range = -1
+                restaurant_price_range = restaurant['profile']['price_range'] or None
+                restaurant_distance = restaurant['dist']['calculated'] or None
                 
                 preference_score = 0
                 for index, user_category in enumerate(user_categories):
                     if user_category in restaurant_categories:
                         preference_score += len(user_categories) - index
-                price_score = 1 if restaurant_price_range > -1 and restaurant_price_range <= user_price_range else 0
+
+                price_score = 0
+                if user_price_range and restaurant_price_range:
+                    gap = user_price_range - restaurant_price_range
+                    if gap == 0:
+                        price_score = 3
+                    elif gap == 1:
+                        price_score = 2
+                    elif gap == 2:
+                        price_score = 1
+
+                distance_score = 0
+                if restaurant_distance:
+                    if restaurant_distance < 1000:
+                        distance_score = 3
+                    elif restaurant_distance < 3000:
+                        distance_score = 1
+
+                history_score = 0
                 
-                score = preference_score + price_score
+                score = preference_score + price_score + distance_score + history_score
                 score_sum += score
 
             group_score += score_sum
@@ -149,7 +165,7 @@ def genetic_algorithm_recommender(restaurants, users):
 
     def initialize_population():
         # check for dup
-        return [sample(range(len(restaurants)), GENES) for _ in range(POPULATION)]
+        return [sample(range(len(restaurants)), genes) for _ in range(POPULATION)]
 
 
     def is_converged(generation_highest_fitnesses):
@@ -158,6 +174,7 @@ def genetic_algorithm_recommender(restaurants, users):
 
     population = initialize_population()
     generation_highest_fitnesses = []
+    generation_highest_fitness_chromosomes = []
 
     number_of_generation = 0
     while True:
@@ -165,18 +182,19 @@ def genetic_algorithm_recommender(restaurants, users):
         chromosomes = add_fitness_for_population(population)
         highest_fitness_chromosome = max(chromosomes)
         generation_highest_fitnesses.append(highest_fitness_chromosome[0])
-        print(f"Gen#{number_of_generation}: {highest_fitness_chromosome}")
+        generation_highest_fitness_chromosomes.append(highest_fitness_chromosome)
+        print(f"Gen#{number_of_generation}: {highest_fitness_chromosome}") if varbose else ''
         if number_of_generation == 100 or is_converged(generation_highest_fitnesses):
-            print(f"Result: {highest_fitness_chromosome}")
-            # print(generation_highest_fitnesses)
-            return [restaurants[index] for index in highest_fitness_chromosome[1]]
+            print(f"Result: {highest_fitness_chromosome}") if varbose else ''
+            recommended_restaurants = [restaurants[index] for index in highest_fitness_chromosome[1]]
+            return recommended_restaurants if not get_matrix else (recommended_restaurants, generation_highest_fitness_chromosomes)
         pairs = get_pairs(chromosomes)
         population = generate_new_generation(pairs)
 
 
-def test_genetic_algorithm_recommender():
-    import requests
-    from pprint import pprint
+def test_genetic_algorithm_recommender(count=6):
+    # import requests
+    
     import json
     # response = requests.get('https://neutron-dot-restaurant-recommender-system.et.r.appspot.com/api/restaurants/nearby?lat=13.64999266005064&lon=100.49433963566172&dist=10000&limit=100')
     with open('recommender/test_data/nearby_restaurants.json') as f:
@@ -194,11 +212,13 @@ def test_genetic_algorithm_recommender():
         "price_range": 3,
     }
     users = [user_irin, user_north]
-    recommended_retaurants = genetic_algorithm_recommender(input_restaurants, users)
-    # print(f"Result: {recommended_retaurants}")
-    pprint([(restaurant['name'], [cat['name_en'] for cat in restaurant['profile']['categories']]) for restaurant in recommended_retaurants])
+    recommended_retaurants, generations = genetic_algorithm_recommender(input_restaurants, users, get_matrix=True, genes=count)
+    # pprint([(restaurant['name'], [cat['name_en'] for cat in restaurant['profile']['categories']]) for restaurant in recommended_retaurants])
+    return recommended_retaurants, generations
 
 
 if __name__ == '__main__':
-    test_genetic_algorithm_recommender()
+    from pprint import pprint
+    recommended_retaurants, generations = test_genetic_algorithm_recommender(count=10)
+    pprint([(restaurant['name'], [cat['name_en'] for cat in restaurant['profile']['categories']]) for restaurant in recommended_retaurants])
     

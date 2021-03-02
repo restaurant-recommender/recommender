@@ -59,19 +59,30 @@ def simple_recommend():
 #     categories: string[]
 #     price_range: number
 # }
+# History: {
+#     user: string
+#     histories: {
+#         restaurant: string
+#         love: number
+#         hate: number
+#     }[]
+# }
 
 @app.route("/recommend/genetic", methods=['POST'])
 def genetic_recommend():
+    default_count = 6
     try:
         data = request.json
-        print('Got new genetic request')
-        restaurants = genetic_algorithm_recommender(data['restaurants'], data['users'])
+        count = int(request.args.get('count')) or default_count
+        print(f'Got new genetic request, count: {count}')
+        restaurants = genetic_algorithm_recommender(data['restaurants'], data['users'], genes=count)
         print(f"Generated {len(restaurants)}")
         return jsonify({
             'status': True,
             'restaurants': restaurants,
         })
     except Exception as error:
+        print(error)
         return jsonify({
             'status': False,
             'message': str(error),
