@@ -220,5 +220,6 @@ def test_genetic_algorithm_recommender(count=6):
 if __name__ == '__main__':
     from pprint import pprint
     recommended_retaurants, generations = test_genetic_algorithm_recommender(count=10)
+    pprint(generations)
     pprint([(restaurant['name'], [cat['name_en'] for cat in restaurant['profile']['categories']]) for restaurant in recommended_retaurants])
     
