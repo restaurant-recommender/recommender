@@ -203,12 +203,12 @@ def test_genetic_algorithm_recommender(count=6):
     input_restaurants = [restaurant for restaurant in input_restaurants if restaurant['type'] == 'restaurant']
     user_irin = {
         "name": "irin",
-        "categories": ['Korean Restaurant', 'Japanese Restaurant', 'Italian Restaurant', 'Thai Restaurant', 'Shabu Shabu Restaurant'],
+        "categories": ['Korean', 'Japanese', 'Italian', 'Thai', 'Shabu Shabu'],
         "price_range": 2,
     }
     user_north = {
         "name": "north",
-        "categories": ['Thai Restaurant', 'Japanese Restaurant', 'Korean Restaurant', 'Shabu Shabu Restaurant', 'Steakhouse'],
+        "categories": ['Thai', 'Japanese', 'Korean', 'Shabu Shabu', 'Steakhouse'],
         "price_range": 3,
     }
     users = [user_irin, user_north]
