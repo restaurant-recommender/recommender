@@ -61,16 +61,16 @@ def genetic_algorithm_recommender(restaurants, users, genes=6, get_matrix=False,
                     elif gap == 2:
                         price_score = 1
 
-                distance_score = 0
-                if restaurant_distance:
-                    if restaurant_distance < 1000:
-                        distance_score = 3
-                    elif restaurant_distance < 3000:
-                        distance_score = 1
+                # distance_score = 0
+                # if restaurant_distance:
+                #     if restaurant_distance < 1000:
+                #         distance_score = 3
+                #     elif restaurant_distance < 3000:
+                #         distance_score = 1
 
                 history_score = 0
                 
-                score = preference_score + price_score + distance_score + history_score
+                score = preference_score + price_score + history_score
                 score_sum += score
 
             group_score += score_sum
